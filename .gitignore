@@ -31,7 +31,7 @@ cypress/videos
 coverage
 
 # config
-/.config/*
+/.config/*.env
 !/.config/example.yml
 !/.config/docker_example.yml
 !/.config/docker_example.env
