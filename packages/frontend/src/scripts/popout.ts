@@ -1,9 +1,9 @@
 /*
- * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-FileCopyrightText: syuilo and misskey-project
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { appendQuery } from './url.js';
+import { appendQuery } from '@@/js/url.js';
 import * as config from '@/config.js';
 
 export function popout(path: string, w?: HTMLElement) {

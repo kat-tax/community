@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-FileCopyrightText: syuilo and misskey-project
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
@@ -42,7 +42,7 @@ export class DownloadService {
 
 		const timeout = 30 * 1000;
 		const operationTimeout = 60 * 1000;
-		const maxSize = this.config.maxFileSize ?? 262144000;
+		const maxSize = this.config.maxFileSize;
 
 		const urlObj = new URL(url);
 		let filename = urlObj.pathname.split('/').pop() ?? 'untitled';
@@ -145,7 +145,8 @@ export class DownloadService {
 		const parsedIp = ipaddr.parse(ip);
 
 		for (const net of this.config.allowedPrivateNetworks ?? []) {
-			if (parsedIp.match(ipaddr.parseCIDR(net))) {
+			const cidr = ipaddr.parseCIDR(net);
+			if (cidr[0].kind() === parsedIp.kind() && parsedIp.match(ipaddr.parseCIDR(net))) {
 				return false;
 			}
 		}

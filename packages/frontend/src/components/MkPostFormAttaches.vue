@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: syuilo and other misskey contributors
+SPDX-FileCopyrightText: syuilo and misskey-project
 SPDX-License-Identifier: AGPL-3.0-only
 -->
 
@@ -56,6 +56,23 @@ function detachMedia(id: string) {
 	}
 }
 
+async function detachAndDeleteMedia(file: Misskey.entities.DriveFile) {
+	if (mock) return;
+
+	detachMedia(file.id);
+
+	const { canceled } = await os.confirm({
+		type: 'warning',
+		text: i18n.t('driveFileDeleteConfirm', { name: file.name }),
+	});
+
+	if (canceled) return;
+
+	os.apiWithDialog('drive/files/delete', {
+		fileId: file.id,
+	});
+}
+
 function toggleSensitive(file) {
 	if (mock) {
 		emit('changeSensitive', file, !file.isSensitive);
@@ -76,7 +93,7 @@ async function rename(file) {
 	const { canceled, result } = await os.inputText({
 		title: i18n.ts.enterFileName,
 		default: file.name,
-		allowEmpty: false,
+		minLength: 1,
 	});
 	if (canceled) return;
 	misskeyApi('drive/files/update', {
@@ -91,7 +108,7 @@ async function rename(file) {
 async function describe(file) {
 	if (mock) return;
 
-	os.popup(defineAsyncComponent(() => import('@/components/MkFileCaptionEditWindow.vue')), {
+	const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkFileCaptionEditWindow.vue')), {
 		default: file.comment !== null ? file.comment : '',
 		file: file,
 	}, {
@@ -104,7 +121,8 @@ async function describe(file) {
 				file.comment = comment;
 			});
 		},
-	}, 'closed');
+		closed: () => dispose(),
+	});
 }
 
 async function crop(file: Misskey.entities.DriveFile): Promise<void> {
@@ -135,9 +153,16 @@ function showFileMenu(file: Misskey.entities.DriveFile, ev: MouseEvent): void {
 		icon: 'ti ti-crop',
 		action: () : void => { crop(file); },
 	}] : [], {
+		type: 'divider',
+	}, {
 		text: i18n.ts.attachCancel,
 		icon: 'ti ti-circle-x',
 		action: () => { detachMedia(file.id); },
+	}, {
+		text: i18n.ts.deleteFile,
+		icon: 'ti ti-trash',
+		danger: true,
+		action: () => { detachAndDeleteMedia(file); },
 	}], ev.currentTarget ?? ev.target).then(() => menuShowing = false);
 	menuShowing = true;
 }

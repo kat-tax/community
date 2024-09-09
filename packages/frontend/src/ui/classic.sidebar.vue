@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: syuilo and other misskey contributors
+SPDX-FileCopyrightText: syuilo and misskey-project
 SPDX-License-Identifier: AGPL-3.0-only
 -->
 
@@ -86,9 +86,11 @@ function calcViewState() {
 }
 
 function more(ev: MouseEvent) {
-	os.popup(defineAsyncComponent(() => import('@/components/MkLaunchPad.vue')), {
+	const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkLaunchPad.vue')), {
 		src: ev.currentTarget ?? ev.target,
-	}, {}, 'closed');
+	}, {
+		closed: () => dispose(),
+	});
 }
 
 function openAccountMenu(ev: MouseEvent) {
@@ -220,7 +222,7 @@ watch(defaultStore.reactiveState.menuDisplay, () => {
 			left: 0;
 			color: var(--navIndicator);
 			font-size: 8px;
-			animation: blink 1s infinite;
+			animation: global-blink 1s infinite;
 
 			&:has(.itemIndicateValueIcon) {
 				animation: none;

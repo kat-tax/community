@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: syuilo and other misskey contributors
+SPDX-FileCopyrightText: syuilo and misskey-project
 SPDX-License-Identifier: AGPL-3.0-only
 -->
 
@@ -227,7 +227,7 @@ if ($i) {
 	right: 15px;
 	pointer-events: none;
 
-	&:before {
+	&::before {
 		content: "";
 		display: block;
 		width: 18px;

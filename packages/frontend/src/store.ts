@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-FileCopyrightText: syuilo and misskey-project
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
@@ -8,6 +8,7 @@ import * as Misskey from 'misskey-js';
 import { miLocalStorage } from './local-storage.js';
 import type { SoundType } from '@/scripts/sound.js';
 import { Storage } from '@/pizzax.js';
+import { hemisphere } from '@/scripts/intl-const.js';
 
 interface PostFormAction {
 	title: string,
@@ -93,7 +94,7 @@ export const defaultStore = markRaw(new Storage('base', {
 	},
 	defaultNoteVisibility: {
 		where: 'account',
-		default: 'public',
+		default: 'public' as (typeof Misskey.noteVisibilities)[number],
 	},
 	defaultNoteLocalOnly: {
 		where: 'account',
@@ -149,7 +150,7 @@ export const defaultStore = markRaw(new Storage('base', {
 	},
 	visibility: {
 		where: 'deviceAccount',
-		default: 'public' as 'public' | 'home' | 'followers' | 'specified',
+		default: 'public' as (typeof Misskey.noteVisibilities)[number],
 	},
 	localOnly: {
 		where: 'deviceAccount',
@@ -184,6 +185,12 @@ export const defaultStore = markRaw(new Storage('base', {
 		default: {
 			src: 'home' as 'home' | 'local' | 'social' | 'global' | `list:${string}`,
 			userList: null as Misskey.entities.UserList | null,
+			filter: {
+				withReplies: true,
+				withRenotes: true,
+				withSensitive: true,
+				onlyFiles: false,
+			},
 		},
 	},
 	pinnedUserLists: {
@@ -218,6 +225,10 @@ export const defaultStore = markRaw(new Storage('base', {
 	advancedMfm: {
 		where: 'device',
 		default: true,
+	},
+	showReactionsCount: {
+		where: 'device',
+		default: false,
 	},
 	enableQuickAddMfmFunction: {
 		where: 'device',
@@ -391,10 +402,6 @@ export const defaultStore = markRaw(new Storage('base', {
 		where: 'device',
 		default: false,
 	},
-	tlWithReplies: {
-		where: 'device',
-		default: false,
-	},
 	defaultWithReplies: {
 		where: 'account',
 		default: false,
@@ -427,6 +434,34 @@ export const defaultStore = markRaw(new Storage('base', {
 			sfxVolume: 1,
 		},
 	},
+	hemisphere: {
+		where: 'device',
+		default: hemisphere as 'N' | 'S',
+	},
+	enableHorizontalSwipe: {
+		where: 'device',
+		default: true,
+	},
+	useNativeUIForVideoAudioPlayer: {
+		where: 'device',
+		default: false,
+	},
+	keepOriginalFilename: {
+		where: 'device',
+		default: true,
+	},
+	alwaysConfirmFollow: {
+		where: 'device',
+		default: true,
+	},
+	confirmWhenRevealingSensitiveMedia: {
+		where: 'device',
+		default: false,
+	},
+	contextMenu: {
+		where: 'device',
+		default: 'app' as 'app' | 'appWithShift' | 'native',
+	},
 
 	sound_masterVolume: {
 		where: 'device',
@@ -451,14 +486,6 @@ export const defaultStore = markRaw(new Storage('base', {
 	sound_notification: {
 		where: 'device',
 		default: { type: 'syuilo/n-ea', volume: 1 } as SoundStore,
-	},
-	sound_antenna: {
-		where: 'device',
-		default: { type: 'syuilo/triple', volume: 1 } as SoundStore,
-	},
-	sound_channel: {
-		where: 'device',
-		default: { type: 'syuilo/square-pico', volume: 1 } as SoundStore,
 	},
 	sound_reaction: {
 		where: 'device',
@@ -493,8 +520,8 @@ interface Watcher {
 /**
  * 常にメモリにロードしておく必要がないような設定情報を保管するストレージ(非リアクティブ)
  */
-import lightTheme from '@/themes/l-light.json5';
-import darkTheme from '@/themes/d-green-lime.json5';
+import lightTheme from '@@/themes/l-light.json5';
+import darkTheme from '@@/themes/d-green-lime.json5';
 
 export class ColdDeviceStorage {
 	public static default = {
@@ -531,7 +558,7 @@ export class ColdDeviceStorage {
 	public static set<T extends keyof typeof ColdDeviceStorage.default>(key: T, value: typeof ColdDeviceStorage.default[T]): void {
 		// 呼び出し側のバグ等で undefined が来ることがある
 		// undefined を文字列として miLocalStorage に入れると参照する際の JSON.parse でコケて不具合の元になるため無視
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		 
 		if (value === undefined) {
 			console.error(`attempt to store undefined value for key '${key}'`);
 			return;
